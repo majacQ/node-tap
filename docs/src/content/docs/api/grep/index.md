@@ -1,6 +1,6 @@
 ---
 title: Filtering Tests - Grep
-section: 4.07
+section: 5.07
 redirect_from:
   - /grep/
   - /grep
@@ -15,6 +15,8 @@ Note: this is for filtering test functions within a test file.  If you
 want to filter which _files_ get run, just pass the appropriate
 argument to the `tap` executable.  That is, instead of `tap
 test/*.js`, do `tap test/foo.js` to just run a single file.
+
+Tests that do not match the grep expression are treated as `SKIP` tests, but they are not reported by the default `treport` output.
 
 ## Command Line Usage
 

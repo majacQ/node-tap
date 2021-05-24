@@ -1,5 +1,6 @@
 // just load this to assign the runner test's output cleaner
 require('./run/index.js')
+const mkdirp = require('mkdirp')
 
 // spawn mock
 // log what's being run, and then write out the index
@@ -120,11 +121,10 @@ const index = {
   }
 }
 
-const mkdirp = require('mkdirp').sync
 const rimraf = require('rimraf').sync
-const pidir = dir + '/.nyc_output/processinfo'
-mkdirp(pidir)
 const fs = require('fs')
+const pidir = dir + '/.nyc_output/processinfo'
+mkdirp.sync(pidir)
 const read = file => fs.existsSync(file) && fs.readFileSync(file, 'utf8')
 const saveFile = 'node_modules/.cache/tap/watch-' + process.pid
 
@@ -241,7 +241,7 @@ t.test('run tests on changes', t => {
     t.equal(w.watcher, null)
     w.pause()
     w.resume()
-    t.notEqual(w.watcher, null)
+    t.not(w.watcher, null)
     t.end()
   })
 

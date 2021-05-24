@@ -47,11 +47,11 @@ require('../lib/watch.js').Watch = FakeWatch
 const t = require('../')
 
 const originalCwd = process.cwd()
-const mkdirp = require('mkdirp').sync
 const rimraf = require('rimraf').sync
 
 const dir = 'repl-test'
-mkdirp(dir)
+const mkdirp = require('mkdirp')
+mkdirp.sync(dir)
 process.chdir(dir)
 t.teardown(() => {
   process.chdir(originalCwd)
@@ -195,7 +195,7 @@ t.test('coverage report', t => {
 })
 
 t.test('clear', t => {
-  mkdirp('.nyc_output')
+  mkdirp.sync('.nyc_output')
   input.write('clear\n')
   t.notOk(fs.existsSync('.nyc_output'))
   fakeWatch.once('afterProcess', () => process.nextTick(() => {
@@ -205,10 +205,10 @@ t.test('clear', t => {
 })
 
 t.test('completer', t => {
-  mkdirp('test/foo')
-  mkdirp('temp/orary')
-  fs.writeFileSync('test/foo/bar.js')
-  fs.writeFileSync('test/follow.js')
+  mkdirp.sync('test/foo')
+  mkdirp.sync('temp/orary')
+  fs.writeFileSync('test/foo/bar.js', '')
+  fs.writeFileSync('test/follow.js', '')
   const tests = [
     '',
     'ex',

@@ -1,6 +1,6 @@
 ---
 title: Asserts
-section: 4.01
+section: 5.01
 redirect_from:
   - /asserts/
   - /asserts
@@ -194,7 +194,7 @@ the object that is wanted.
 Synonyms: `t.equals`, `t.isEqual`, `t.is`, `t.strictEqual`,
 `t.strictEquals`, `t.strictIs`, `t.isStrict`, `t.isStrictly`
 
-## t.notEqual(found, notWanted, message, extra)
+## t.not(found, notWanted, message, extra)
 
 Inverse of `t.equal()`.
 
@@ -245,6 +245,42 @@ Synonyms: `t.strictInequivalent`, `t.strictDeepInequal`,
 `t.notSameStrict`, `t.deepNot`, `t.notDeeply`, `t.strictDeepInequals`,
 `t.notStrictSame`
 
+## t.hasStrict(found, pattern, message, extra)
+
+Verify that the found object contains all of the provided fields, and that
+they are of the same type and value as the pattern provided.
+
+This does _not_ do advanced/loose matching based on constructor, regexp
+patterns, and so on, like `t.match()` does.  You _may_ specify `key:
+undefined` in the pattern to ensure that a field is not defined in the
+found object, but it will not differentiate between a missing property and
+a property set to `undefined`.
+
+## t.notHasStrict(found, pattern, messsage, extra)
+
+The inverse of `t.hasStrict()`.  Verifies that the found object does not
+contain all of the provided fields, or if it does, that they are not the
+same values and/or types.
+
+## t.has(found, pattern, message, extra)
+
+Verify that the found object contains all of the provided fields, and that
+they coerce to the same values, even if the types do not match.
+
+This does _not_ do advanced/loose matching based on constructor, regexp
+patterns, and so on, like `t.match()` does.  You _may_ specify `key:
+undefined` in the pattern to ensure that a field is not defined in the
+found object, but it will not differentiate between a missing property and
+a property set to `undefined`.
+
+Synonyms: `t.hasFields`, `t.includes`, `t.include`, `t.contains`
+
+## t.notHas(found, pattern, message, extra)
+
+The inverse of `t.has()`.  Verifies that the found object does not contain
+all of the provided fields, or if it does, that they do not coerce to the
+same values.
+
 ## t.match(found, pattern, message, extra)
 
 Verify that the found object matches the pattern provided.
@@ -266,8 +302,7 @@ set of required fields, but additional fields are ok.
 See [tcompare](http://npm.im/tcompare) for the full details on how this
 works.
 
-Synonyms: `t.has`, `t.hasFields`, `t.matches`, `t.similar`, `t.like`,
-`t.isLike`, `t.includes`, `t.include`, `t.contains`
+Synonyms: `t.matches`, `t.similar`, `t.like`, `t.isLike`
 
 ## t.notMatch(found, pattern, message, extra)
 

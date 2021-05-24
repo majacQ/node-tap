@@ -1,6 +1,6 @@
 ---
 title: CLI
-section: 5
+section: 6
 redirect_from:
   - /cli/
   - /cli
@@ -19,7 +19,7 @@ information.
 Usage:
   tap [options] [<files>]
 
-tap v14.7.0 - A Test-Anything-Protocol library for JavaScript
+tap v15.0.9 - A Test-Anything-Protocol library for JavaScript
 
 Executes all the files and interprets their output as TAP formatted test result
 data. If no files are specified, then tap will search for testy-looking files,
@@ -184,6 +184,21 @@ Running Parallel Tests:
                          back to the default if an earlier option (or config
                          file) set it differently.
 
+  --before=<module>      A node program to be run before test files are
+                         executed.
+
+                         Exiting with a non-zero status code or a signal will
+                         fail the test run and exit the process in error.
+
+  --after=<module>       A node program to be executed after tests are finished.
+
+                         This will be run even if a test in the series fails
+                         with a bailout, but it will *not* be run if a --before
+                         script fails.
+
+                         Exiting with a non-zero status code or a signal will
+                         fail the test run and exit the process in error.
+
 Code Coverage Options:
 
   Tap uses the nyc module internally to provide code coverage, so there is no
@@ -299,11 +314,17 @@ Other Options:
                          .ts, .tsx, .js, .jsx, .cjs, or .mjs, in a top-level
                          folder named test, tests, or __tests__, or any file
                          ending in '.spec.' or '.test.' before a supported
-                         extension.
+                         extension, or a top-level file named
+                         'test.(js,jsx,...)' or 'tests.(js,jsx,...)'
 
                          Ie, the default value for this option is:
-                         ((\/|^)(tests?|__tests?__)\/.*|\.(test|spec))\.([mc]js|
-                         [jt]sx?)$
+                         ((\/|^)(tests?|__tests?__)\/.*|\.(tests?|spec)|^\/?test
+                         s?)\.([mc]js|[jt]sx?)$
+
+                         Note that .jsx files will only be run when --jsx is
+                         enabled, .ts files will only be run when --ts is
+                         enabled, and .tsx files will only be run with both --ts
+                         and --jsx are enabled.
 
   --test-ignore=<pattern>
                          When no positional arguments are provided, use the
@@ -351,21 +372,16 @@ Other Options:
   --debug-brk            Run JavaScript tests with node --debug-brk
   --harmony              Enable all Harmony flags in JavaScript tests
   --strict               Run JS tests in 'use strict' mode
-
-  --esm                  Run .js and .mjs with support for EcmaScript modules
-                         (Default: true)
-
-  --no-esm               switch off the --esm flag
   --flow                 Removes flow types
   --no-flow              switch off the --flow flag
 
   --ts                   Automatically load .ts and .tsx tests with tap's
-                         bundled ts-node module (Default: true)
+                         bundled ts-node module (Default: false)
 
   --no-ts                switch off the --ts flag
 
   --jsx                  Automatically load .jsx tests using tap's bundled
-                         import-jsx loader (Default: true)
+                         import-jsx loader (Default: false)
 
   --no-jsx               switch off the --jsx flag
 
@@ -388,6 +404,22 @@ Other Options:
 
                          Run 'tap --dump-config' to see available options and
                          formatting.
+
+  --libtap-settings=<module>
+                         A module which exports an object of fields to assign
+                         onto 'libtap/settings'. These are advanced
+                         configuration options for modifying the behavior of
+                         tap's internal runtime.
+
+                         Module path is resolved relative to the current working
+                         directory.
+
+                         Allowed fields: rmdirRecursive, rmdirRecursiveSync,
+                         StackUtils, stackUtils, output, snapshotFile.
+
+                         See libtap documentation for expected values and usage.
+
+                         https://github.com/tapjs/libtap
 
   -o<file> --output-file=<file>
                          Send the raw TAP output to the specified file. Reporter
@@ -423,6 +455,10 @@ Environment Variables:
   TAP_RCFILE             A yaml formatted file which can set any of the above
                          options. Defaults to ./.taprc
 
+  TAP_LIBTAP_SETTINGS    A path (relative to current working directory) of a
+                         file that exports fields to override the default libtap
+                         settings
+
   TAP_TIMEOUT            Default value for --timeout option.
 
   TAP_COLORS             Set to '1' to force color output, or '0' to prevent
@@ -448,10 +484,6 @@ Environment Variables:
                          current working directory is the tap project itself.
                          Note that node internals are always excluded.
 
-  TAP_DEV_SHORTSTACK     Set to '1' to exclude node-tap internals in stack
-                         traces, even if the current working directory is the
-                         tap project itself.
-
   TAP_DEBUG              Set to '1' to turn on debug mode.
   NODE_DEBUG             Include 'tap' to turn on debug mode.
 
@@ -464,9 +496,8 @@ Environment Variables:
                          flag works.)
 
   TAP_ONLY               Set to '1' to set the --only flag
-  TAP_NO_ESM             Set to '1' to disable automatic esm support
-  TAP_NO_TS              Set to '1' to disable automatic typescript support
-  TAP_NO_JSX             Set to '1' to disable automatic jsx support
+  TAP_TS                 Set to '1' to enable automatic typescript support
+  TAP_JSX                Set to '1' to enable automatic jsx support
 
 Config Files:
 

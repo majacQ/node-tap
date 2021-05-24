@@ -8,10 +8,10 @@ const {
 
 const {getChangedFilter, filterFiles} = require(bin)
 const fs = require('fs')
-const mkdirp = require('mkdirp')
 
 const rewrite = file => fs.writeFileSync(file, fs.readFileSync(file))
 
+const mkdirp = require('mkdirp')
 mkdirp.sync(dir)
 const cwd = process.cwd()
 process.chdir(dir)

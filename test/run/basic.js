@@ -1,3 +1,5 @@
+const fs = require('fs')
+const mkdirp = require('mkdirp')
 const {
   tmpfile,
   run,
@@ -105,7 +107,6 @@ t.test('basic test run', t => {
 })
 
 t.test('ignored files', t => {
-  const mkdirp = require('mkdirp')
   mkdirp.sync(`${dir}/ig/test/node_modules`)
   mkdirp.sync(`${dir}/ig/node_modules`)
   const ok = tmpfile(t, 'ig/test/ok.js',

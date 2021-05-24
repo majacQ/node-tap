@@ -1,6 +1,6 @@
 ---
 title: The TAP 100
-section: 7.01
+section: 8.01
 redirect_from:
   - /100/
   - /100
@@ -12,20 +12,29 @@ These modules use the `--100` flag to run tests with 100%
 [coverage](/docs/coverage/) of all lines, branches, statements, and
 functions.
 
+Note that, as of tap v14, the default coverage level is `100%` for lines,
+branches, functions, and statements.  As of tap v15, `--check-coverage` is
+enabled by default.  If you use `node-tap`, and your tests pass, you're in
+this club by default ;)
+
 To add yours to the list, send a [pull
 request](https://github.com/tapjs/node-tap/blob/master/docs/src/content/docs/coverage/100/index.md)
 to add it to the docs.
 
 * [abbrev](https://www.npmjs.com/package/abbrev)
+* [bowling](https://www.npmjs.com/package/bowling)
 * [casern](https://www.npmjs.com/package/casern)
+* [clear-folder](https://www.npmjs.com/package/clear-folder)
 * [color-support](https://www.npmjs.com/package/color-support)
 * [contentfs](https://www.npmjs.com/package/contentfs)
+* [csp-tool](https://www.npmjs.com/package/csp-tool)
 * [dotenv](https://www.npmjs.com/package/dotenv)
 * [dpc](https://www.npmjs.com/package/dpc)
 * [events-to-array](https://www.npmjs.com/package/events-to-array)
 * [express-jwt-permissions](https://www.npmjs.com/package/express-jwt-permissions)
+* [fastify-esso](https://www.npmjs.com/package/fastify-esso)
 * [fastify-vhost](https://www.npmjs.com/package/fastify-vhost)
-* [frs-replace](https://www.npmjs.com/package/frs-replace)
+* [@frsource/frs-replace](https://www.npmjs.com/package/@frsource/frs-replace)
 * [fs-exists-cached](https://www.npmjs.com/package/fs-exists-cached)
 * [fs-minipass](https://www.npmjs.com/package/fs-minipass)
 * [fs-readstream-seek](https://www.npmjs.com/package/fs-readstream-seek)
@@ -64,5 +73,7 @@ to add it to the docs.
 * [trivial-deferred](https://www.npmjs.com/package/trivial-deferred)
 * [tsame](https://www.npmjs.com/package/tsame)
 * [twing](https://www.npmjs.com/package/twing)
+* [undici](https://www.npmjs.com/package/undici)
+* [virtuaaliviivakoodi](https://www.npmjs.com/package/virtuaaliviivakoodi)
 * [yallist](https://www.npmjs.com/package/yallist)
 * [yapool](https://www.npmjs.com/package/yapool)

@@ -1,7 +1,8 @@
 ---
 title: Testing with Fixtures
-section: 4.035
+section: 5.035
 ---
+
 # Testing with Fixtures
 
 Frequently, tests need to setup and then tear down some files and
@@ -34,6 +35,8 @@ this:
 const dir = t.testdir({
   'some-file': 'some contents',
   // use t.fixture() to create links and symlinks
+  // this will use junctions on Windows as of v14.11.0 if the
+  // target is a directory, so Administrator perms aren't needed.
   link: t.fixture('symlink', 'some-file'),
   nested: {
     'README.md': 'nested dirs work, too!'
@@ -66,8 +69,8 @@ supported types are:
 * `file` - A file, where the `content` is the file contents.
 
 You can also pass in a plain JavaScript object to specify a `dir` type, or
-a string or buffer to specify a `file` type.  For example, these two
-styles produce identical results:
+a string or buffer to specify a `file` type.  For example, these two styles
+produce identical results:
 
 ```js
 // clunky style:
@@ -80,3 +83,43 @@ t.testdir({
   filename: 'contents'
 })
 ```
+
+## Fixture Directory Filename
+
+The fixture directory is returned by the `t.testdir()` method.  It is also
+available on the `t.testdirName` getter.
+
+The name is determined by the filename and path of the `main` script.  If
+no `main` script is available (for example, if running tap in a node repl),
+then it uses the test file name `TAP`.
+
+## Timing Caveat
+
+While the fixture directory is _created_ synchronously, it is _removed_
+asynchronously, because that is the only way to get around `ENOTEMPTY`
+errors on Windows.
+
+This means that the next test after one that uses `t.testdir()` will be
+deferred until after the end of the current run to completion.  So, for
+example:
+
+```js
+t.test('first test', t => {
+  console.error('one')
+  t.testdir()
+  t.end()
+})
+console.error('two')
+t.test('second test', t => {
+  console.error('three')
+  t.end()
+})
+console.error('four')
+```
+
+This will print `one two four three` instead of `one two three four`,
+because the second test is deferred while waiting for the first test's
+fixture dir to be removed.
+
+The fixture directory cleanup will always happen _after_ any user-scheduled
+`t.teardown()` functions, as of tap v14.11.0.

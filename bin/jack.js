@@ -1,7 +1,6 @@
 const { jack, num, opt, list, flag, env } = require('jackspeak')
 
 const {cpus} = require('os')
-const colorSupport = require('color-support')
 
 const reporters = [...new Set([
   ...(require('tap-mocha-reporter').types),
@@ -286,6 +285,25 @@ Much more documentation available at: https://www.node-tap.org/
                   `
   }),
 
+  before: opt({
+    hint: 'module',
+    description: `A node program to be run before test files are executed.
+
+                  Exiting with a non-zero status code or a signal will fail
+                  the test run and exit the process in error.`,
+  }),
+  after: opt({
+    hint: 'module',
+    description: `A node program to be executed after tests are finished.
+
+                  This will be run even if a test in the series fails with
+                  a bailout, but it will *not* be run if a --before script
+                  fails.
+
+                  Exiting with a non-zero status code or a signal will fail
+                  the test run and exit the process in error.`,
+  }),
+
 }, {
 
   description: 'Code Coverage Options',
@@ -410,6 +428,7 @@ Much more documentation available at: https://www.node-tap.org/
     If you run tests in this way, please add your project to the list.`,
 
   'check-coverage': flag({
+    default: true,
     description: `Check whether coverage is within
                   thresholds provided.  Setting this
                   explicitly will default --coverage to
@@ -485,17 +504,25 @@ Much more documentation available at: https://www.node-tap.org/
 
   'test-regex': opt({
     hint: 'pattern',
-    default: '((\\/|^)(tests?|__tests?__)\\/.*|\\.(test|spec))\\.([mc]js|[jt]sx?)$',
+    // anything in a test/ or tests/ folder, or a /tests.js or /test.js,
+    // or anything ending in *.test.js or *.spec.js
+    default: '((\\/|^)(tests?|__tests?__)\\/.*|\\.(tests?|spec)|^\\/?tests?)\\.([mc]js|[jt]sx?)$',
     description: `A regular expression pattern indicating tests to run if no
                   positional arguments are provided.
 
                   By default, tap will search for all files ending in
                   .ts, .tsx, .js, .jsx, .cjs, or .mjs, in a top-level folder
                   named test, tests, or __tests__, or any file ending in
-                  '.spec.' or '.test.' before a supported extension.
+                  '.spec.' or '.test.' before a supported extension, or a
+                  top-level file named 'test.(js,jsx,...)' or
+                  'tests.(js,jsx,...)'
 
                   Ie, the default value for this option is:
-                  ((\\/|^)(tests?|__tests?__)\\/.*|\\.(test|spec))\\.([mc]js|[jt]sx?)$
+                  ((\\/|^)(tests?|__tests?__)\\/.*|\\.(tests?|spec)|^\\/?tests?)\\.([mc]js|[jt]sx?)$
+
+                  Note that .jsx files will only be run when --jsx is enabled,
+                  .ts files will only be run when --ts is enabled, and .tsx
+                  files will only be run with both --ts and --jsx are enabled.
                   `
   }),
 
@@ -570,25 +597,20 @@ Much more documentation available at: https://www.node-tap.org/
     description: `Run JS tests in 'use strict' mode`,
   }),
 
-  esm: flag({
-    default: process.env.TAP_NO_ESM !== '1',
-    description: `Run .js and .mjs with support for EcmaScript modules
-                  (Default: true)`,
-  }),
   flow: flag({
     description: `Removes flow types`,
   }),
 
   ts: flag({
-    default: process.env.TAP_NO_TS !== '1',
+    default: process.env.TAP_TS === '1',
     description: `Automatically load .ts and .tsx tests with tap's bundled
-                  ts-node module (Default: true)`,
+                  ts-node module (Default: false)`,
   }),
 
   jsx: flag({
-    default: process.env.TAP_NO_JSX !== '1',
+    default: process.env.TAP_JSX === '1',
     description: `Automatically load .jsx tests using tap's bundled import-jsx
-                  loader (Default: true)`,
+                  loader (Default: false)`,
   }),
 
   'nyc-help': flag({
@@ -622,6 +644,25 @@ Much more documentation available at: https://www.node-tap.org/
                   formatting.`,
     envDefault: 'TAP_RCFILE',
     default: `${process.cwd()}/.taprc`,
+  }),
+
+  'libtap-settings': opt({
+    hint: 'module',
+    description: `A module which exports an object of fields to assign onto
+                  'libtap/settings'.  These are advanced configuration options
+                  for modifying the behavior of tap's internal runtime.
+
+                  Module path is resolved relative to the current working
+                  directory.
+
+                  Allowed fields: rmdirRecursive, rmdirRecursiveSync,
+                  StackUtils, stackUtils, output, snapshotFile.
+
+                  See libtap documentation for expected values and usage.
+
+                  https://github.com/tapjs/libtap`,
+    envDefault: 'TAP_LIBTAP_SETTINGS',
+    default: null,
   }),
 
   'output-file': opt({
@@ -692,6 +733,11 @@ Much more documentation available at: https://www.node-tap.org/
                   ./.taprc`
   }),
 
+  TAP_LIBTAP_SETTINGS: env({
+    description: `A path (relative to current working directory) of a file
+                  that exports fields to override the default libtap settings`,
+  }),
+
   TAP_TIMEOUT: env(num({
     min: 0,
     default: 30,
@@ -742,13 +788,6 @@ Much more documentation available at: https://www.node-tap.org/
                   excluded.`
   })),
 
-  TAP_DEV_SHORTSTACK: env(flag({
-    description: `Set to '1' to exclude node-tap internals
-                  in stack traces, even if the current
-                  working directory is the tap project
-                  itself.`
-  })),
-
   TAP_DEBUG: env(flag({
     description: `Set to '1' to turn on debug mode.`
   })),
@@ -776,16 +815,12 @@ Much more documentation available at: https://www.node-tap.org/
     description: `Set to '1' to set the --only flag`
   })),
 
-  TAP_NO_ESM: env(flag({
-    description: `Set to '1' to disable automatic esm support`
+  TAP_TS: env(flag({
+    description: `Set to '1' to enable automatic typescript support`
   })),
 
-  TAP_NO_TS: env(flag({
-    description: `Set to '1' to disable automatic typescript support`
-  })),
-
-  TAP_NO_JSX: env(flag({
-    description: `Set to '1' to disable automatic jsx support`
+  TAP_JSX: env(flag({
+    description: `Set to '1' to enable automatic jsx support`
   })),
 
 }, {

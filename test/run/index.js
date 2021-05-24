@@ -20,6 +20,7 @@ delete process.env.TAP_COLORS
 delete process.env.TAP_TIMEOUT
 
 const winSkip = process.platform === 'win32' ? 'known windows failure' : false
+const oldSkip = /^v10\./.test(process.version) ? 'known node v10 failure': false
 
 const cleanStacks = require('../clean-stacks.js')
 // also clean up NYC output a bit, because the line lengths
@@ -33,6 +34,7 @@ const clean = string => cleanStacks(string)
   // two that show up in config dump snapshots
   .replace(/snapshot: (true|false)\n/, '')
   .replace(/cli-tests-[0-9]+/g, 'cli-tests')
+  .split('\n').filter(l => !/ExperimentalWarning/.test(l)).join('\n')
 
 t.cleanSnapshot = clean
 
@@ -64,6 +66,32 @@ const tmpfile = (t, filename, content) => {
   return path.relative('', filename)
 }
 
+const escapeNYC = () =>  {
+  // This function is too intimate with nyc internals, could get broken by internal
+  // changes to nyc.  Probably need an official istanbuljs API to unwrap.
+  const nycWrap = require.resolve('nyc/lib/wrap.js')
+  const preloadList = require('node-preload')
+  const idx = preloadList.indexOf(nycWrap)
+  if (idx === -1) {
+    return
+  }
+
+  preloadList.splice(idx, 1)
+
+  const processOnSpawn = require('process-on-spawn')
+  const nycEnvs = [
+    'NYC_CONFIG',
+    'NYC_CWD',
+    'NYC_PROCESS_ID',
+    'BABEL_DISABLE_CACHE'
+  ]
+  processOnSpawn.addListener(({ env }) => {
+    for (const key of nycEnvs) {
+      delete env[key]
+    }
+  })
+}
+
 if (module === require.main)
   t.pass('this is fine')
 else {
@@ -75,6 +103,7 @@ else {
 }
 
 module.exports = {
+  escapeNYC,
   tmpfile,
   run,
   bin,
@@ -84,4 +113,5 @@ module.exports = {
   dir,
   t,
   winSkip,
+  oldSkip,
 }
