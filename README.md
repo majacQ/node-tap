@@ -1,656 +1,158 @@
 # node-tap
 
-A TAP test framework for Node.js.
-
-This is a mix-and-match set of utilities that you can use to write test
-harnesses and frameworks that communicate with one another using the
-Test Anything Protocol.
-
-It is also a test runner for consuming TAP-generating test scripts,
-and a framework for writing such scripts.
-
-[![Coverage Status](https://coveralls.io/repos/isaacs/node-tap/badge.svg?branch=master)](https://coveralls.io/r/isaacs/node-tap?branch=master)
-
-## USAGE
-
-Write your tests in JavaScript
-
-```javascript
-var tap = require('tap')
-
-// you can test stuff just using the top level object.
-// no suites or subtests required.
-
-tap.equal(1, 1, 'check if numbers still work')
-tap.notEqual(1, 2, '1 should not equal 2')
-
-// also you can group things into sub-tests.
-// Sub-tests will be run in sequential order always,
-// so they're great for async things.
-
-tap.test('first stuff', function (t) {
-  t.ok(true, 'true is ok')
-  t.similar({a: [1,2,3]}, {a: [1,2,3]})
-  // call t.end() when you're done
-  t.end()
-})
-
-// If you have a bunch of setup stuff that MUST work or else
-// the rest of the tests are not worth running, then you can
-// pass `{ bail: true }` to make it bail out on failure.
-
-tap.test('must succeed or all is lost', { bail: true }, function (t) {
-  db = new DataBorscht()
-  t.ok(db, 'borscht setup must succeed')
-  t.end()
-})
-
-// You can also bail out based on specific conditions, or with a
-// different error message of your choosing.
-tap.test('must mostly succeed or all is lost', function (t) {
-  db = new DataBorscht()
-
-  t.ok(db, 'borscht setup')
-  if (!db) {
-    t.bailout('the borscht is lost.  I cannot continue.')
-    return
-  }
-
-  t.ok(db.connection, 'db must have connection')
-  t.ok(db.username, 'db must have username')
-  t.equal(db.color, 'red', 'borscht should be red')
-  if (!t.passing())
-    t.bailout('something weird with the data borscht.')
-
-  t.end()
-})
-
-// you can specify a 'plan' if you know how many
-// tests there will be in advance. Handy when
-// order is irrelevant and things happen in parallel.
-
-tap.test('planned test', function (t) {
-  t.plan(2)
-  setTimeout(function () {
-    t.ok(true, 'a timeout')
-  })
-  setTimeout(function () {
-    t.ok(true, 'b timeout')
-  })
-})
-
-// you can do `var test = require('tap').test` if you like
-// it's pre-bound to the root tap object.
-
-var test = require('tap').test
-
-// subtests can have subtests
-test('parent', function (t) {
-  t.test('child', function (tt) {
-    tt.throws(function () {
-      throw new Error('fooblz')
-    }, {
-      message: 'fooblz'
-    }, 'throw a fooblz')
-
-    tt.throws(function () { throw 1 }, 'throw whatever')
-
-    tt.end()
-  })
-
-  t.end()
-})
+A <abbr title="Test Anything Protocol">TAP</abbr> test framework for
+Node.js.
 
-// thrown errors just fail the current test, so you can
-// also use your own assert library if you like.
-// Of course, this means it won't be able to print out the
-// number of passing asserts, since passes will be silent.
+[![Build Status](https://travis-ci.org/tapjs/node-tap.svg?branch=master)](https://travis-ci.org/tapjs/node-tap)
 
-test('my favorite assert lib', function (t) {
-  var assert = require('assert')
-  assert.ok(true, 'true is ok')
-  assert.equal(1, 1, 'math works')
+_Just wanna see some code? [Get started!](http://www.node-tap.org/basics/)_
 
-  // Since it can't read the plan, using a custom assert lib
-  // means that you MUST use t.end()
-  t.end()
-})
+It includes a command line test runner for consuming TAP-generating test
+scripts, and a JavaScript framework for writing such scripts.
 
-// You can mark tests as 'todo' either using a conf object,
-// or simply by omitting the callback.
-test('solve halting problem')
-test('prove p=np', { todo: true }, function (t) {
-  // i guess stuff goes here
-  t.fail('traveling salesmen must pack their own bags')
-  t.end()
-})
+* [Getting started guide](http://www.node-tap.org/basics/)
+* Built-in [test coverage](http://www.node-tap.org/coverage/)
+* Many [reporter formats](http://www.node-tap.org/reporting/)
+* Extensive [API](http://www.node-tap.org/api/) featuring:
+  * Great [promise support](http://www.node-tap.org/promises/)
+  * Comprehensive [assert library](http://www.node-tap.org/asserts/)
+  * Other [advanced stuff](http://www.node-tap.org/advanced/)
+  * Mocha-like [BDD DSL](http://www.node-tap.org/mochalike/)
+  * [Parallel Testing](http://www.node-tap.org/parallel/)
+* [Command-line interface](http://www.node-tap.org/cli/) for running tests
+  (whether they use node-tap or not)
 
-// Prefer mocha/rspec/lab style global objects?
-// Got you covered.  This is a little experimental,
-// patches definitely welcome.
-tap.mochaGlobals()
-describe('suite ride bro', function () {
-  it('should have a wheel', function () {
-    assert.ok(thingie.wheel, 'wheel')
-  })
-  it('can happen async', function (done) {
-    setTimeout(function () {
-      assert.ok('ok')
-      done()
-    })
-  })
-})
+See [the changelog](http://www.node-tap.org/changelog/) for recent updates,
+or just get started with [the basics](http://www.node-tap.org/basics/).
 
-// Read on for a complete list of asserts, methods, etc.
-```
+All this is too much to manage in a single README file, so head over to
+[the website](http://www.node-tap.org/) to learn more.
 
-You can run tests using the `tap` executable.  Put this in your
-package.json file:
+## Why TAP?
 
-```json
-{
-  "scripts": {
-    "test": "tap test/*.js"
-  }
-}
-```
+Why should you use this thing!?  **LET ME TELL YOU!**
 
-and then you can run `npm test` to run your test scripts.
+Just kidding.
 
-Command line behavior and flags:
+Most frameworks spend a lot of their documentation telling you why they're
+the greatest.  I'm not going to do that.
 
-```
-$ tap -h
-Usage:
-  tap [options] <files>
+### <i lang="it" title="all tastes are tastes">tutti i gusti sono gusti</i>
 
-Executes all the files and interprets their output as TAP
-formatted test result data.
-
-To parse TAP data from stdin, specify "-" as a filename.
-
-Options:
-
-  -c --color                  Force use of colors
+Software testing is a software and user experience design challenge that
+balances on the intersection of many conflicting demands.
 
-  -C --no-color               Force no use of colors
+Node-tap is based on [my](http://izs.me) opinions about how a test
+framework should work, and what it should let you do.  I do _not_ have any
+opinion about whether or not you share those opinions.  If you do share
+them, you will probably enjoy this test library.
 
-  -b --bail                   Bail out on first failure
+1. **Test files should be "normal" programs that can be run directly.**
 
-  -B --no-bail                Do not bail out on first failure (Default)
+   That means that it can't require a special runner that puts magic
+   functions into a global space.  `node test.js` is a perfectly ok way to
+   run a test, and it ought to function exactly the same as when it's run
+   by the fancy runner with reporting and such.  JavaScript tests should be
+   JavaScript programs; not english-language poems with weird punctuation.
 
-  -R<type> --reporter=<type>  Use the specified reporter.  Defaults to
-                              'classic' when colors are in use, or 'tap'
-                              when colors are disabled.
+2. **Test output should be connected to the structure of the test file in a
+   way that is easy to determine.**
 
-                              Available reporters:
-                              classic doc dot dump html htmlcov json
-                              jsoncov jsonstream landing list markdown
-                              min nyan progress silent spec tap xunit
+   That means not unnecessarily deferring test functions until `nextTick`,
+   because that would shift the order of `console.log` output.  Synchronous
+   tests should be synchronous.
 
-  -gc --expose-gc             Expose the gc() function to Node tests
+3. **Test files should be run in separate processes.**
 
-  --debug                     Run JavaScript tests with node --debug
+   That means that it can't use `require()` to load test files.  Doing
+   `node ./test.js` must be the exact same sort of environment for the test
+   as doing `test-runner ./test.js`.  Doing `node test/1.js; node
+   test/2.js` should be equivalent (from the test's point of view) to doing
+   `test-runner test/*.js`.  This prevents tests from becoming implicitly
+   dependent on one anothers' globals.
 
-  --debug-brk                 Run JavaScript tests with node --debug-brk
+4. **Assertions should not normally throw (but throws MUST be handled
+   nicely).**
 
-  --harmony                   Enable all Harmony flags in JavaScript tests
+   I frequently write programs that have many hundreds of assertions based
+   on some list of test cases.  If the first failure throws, then I don't
+   know if I've failed 100 tests or 1, without wrapping everything in a
+   try-catch.  Furthermore, I usually want to see some kind of output or
+   reporting to verify that each one actually ran.
 
-  --strict                    Run JS tests in 'use strict' mode
+   Basically, it should be your decision whether you want to throw or not.
+   The test framework shouldn't force that on you, and should make either
+   case easy.
 
-  -t<n> --timeout=<n>         Time out tests after this many seconds.
-                              Defaults to 30, or the value of the
-                              TAP_TIMEOUT environment variable.
+5. **Test reporting should be separate from the test process, included in
+   the framework, and enabled by default for humans.**
 
-  -h --help                   print this thing you're looking at
+   The [raw test output](https://www.node-tap.org/tap-format/) should be
+   machine-parseable and human-intelligible, and a separate process should
+   consume test output and turn it into a [pretty summarized
+   report](https://www.node-tap.org/reporting/).  This means that test data
+   can be stored and parsed later, dug into for additional details, and so
+   on.  Also: nyan cat.
 
-  -v --version                show the version of this program
+6. **Writing tests should be easy, maybe even fun.**
 
-  --                          Stop parsing flags, and treat any additional
-                              command line arguments as filenames.
-```
+   The lower the barrier to entry for writing new tests, the more tests get
+   written.  That means that there should be a relatively small vocabulary
+   of actions that I need to remember as a test author.  There is no
+   benefit to having a distinction between a "suite" and a "subtest".
+   Fancy DSLs are pretty, but more to remember.
 
-## Coverage
+   That being said, if you return a Promise, or use a DSL that throws a
+   decorated error, then the test framework should Just Work in a way that
+   helps a human being understand the situation.
 
-This module uses [nyc](http://npm.im/nyc) to track code coverage, even
-across subprocess boundaries.  It is included by default, and there's
-nothing you need to do but enable it.  Adding coverage *will* make
-your tests run slightly slower, but that's to be expected.
+7. **Tests should output enough data to diagnose a failure, and no more or
+   less.**
 
-To generate coverage information, run your tests with the `--cov`
-argument.
+   Stack traces pointing at JS internals or the guts of the test framework
+   itself are not helpful.  A test framework is a serious UX challenge, and
+   should be treated with care.
 
-To specify a report format, you can use `--coverage-report=<type>`.
-The default type is `text`, which produces a pretty text-only table on
-the terminal.  If you specify `--coverage-report=lcov`, then tap will
-attempt to open a web browser to view the report after the test run.
+8. **Test coverage should be included.**
 
-If you use this a lot, you may want to add `coverage` and
-`.nyc_output` to your `.gitignore` and/or `.npmignore` files.
+   Running tests with coverage changes the way that you think about your
+   programs, and provides much deeper insight.  Node-tap bundles
+   [NYC](https://istanbul.js.org/) for this.
 
-### Travis-CI and Coveralls.io Integration
+   It _does_ necessarily change the nature of the environment a little bit.
+   But in this case, it's worth it, and NYC has come a long way towards
+   maintaining this promise.
 
-You can very easily take advantage of continuous test coverage reports
-by using [Travis-CI](https://travis-ci.org) and
-[Coveralls](https://coveralls.io).
+   Coverage _enforcement_ is not on by default, but I strongly encourage
+   it.  You can put `"tap":{"check-coverage":true}` in your package.json,
+   or pass [`--100`](https://www.node-tap.org/100/) on the command line.
+   In a future version, it will likely be enabled by default.
 
-1. Enable Travis-CI by signing up, enabling tests on your repo, and
-   adding a `.travis.yml` file to your repo.  You can use [this
-   module's .travis.yml file as an
-   example](https://github.com/isaacs/node-tap/blob/master/.travis.yml)
-2. Enable Coveralls.io by signing up, and adding the repo.  Note the
-   repo API token.
-3. Back at Travis-CI, add a private environment variable.  The name of
-   the environment variable is `COVERALLS_REPO_TOKEN` and the value is
-   the token you got from coveralls.
-4. When that token is set in the environment variable, `tap` will
-   automatically generate coverage information and send it to
-   coveralls.
+9. **Tests should not require more building than your code.**
 
-## API
+   Babel and Webpack are lovely and fine.  But if your code doesn't require
+   compilation, then I think your tests shouldn't either.  Tap is extremely
+   [promise-aware](https://www.node-tap.org/promises/).  JSX, TypeScript,
+   Flow, and ES-Modules are
+   [built-in](https://www.node-tap.org/using-with/) when tests are run by
+   the tap CLI.
 
-### tap = require('tap')
+10. **Tests should run as fast as possible, given all the prior
+    considerations.**
 
-The root `tap` object is an instance of the Test class with a few
-slight modifications.
+   As of version 10, tap supports [parallel
+   tests](https://www.node-tap.org/parallel/).  As of version 13, the test
+   runner defaults to running the same number of parallel tests as there
+   are CPUs on the system.
 
-1. The `teardown()`, `plan()`, and `test()` methods are pre-bound onto
-   the root object, so that you don't have to call them as methods.
-2. By default, it pipes to stdout, so running a test directly just
-   dumps the TAP data for inspection.  (You can of course
-   `tap.unpipe(process.stdout)` if you want to direct it elsewhere.)
-3. Various other things are hung onto it for convenience, since it is
-   the main package export.
-4. The test ends automatically when `process.on('exit')` fires, so
-   there is no need to call `tap.end()` explicitly.
-5. Adding a `teardown` function triggers `autoend` behavior.
-   Otherwise, the `end` would potentially never arrive, if for example
-   `teardown` is used to close a server or cancel some long-running
-   process, because `process.on('exit')` would never fire of its own
-   accord.
+   This makes tests significantly faster in almost every case, on any machine
+   with multiple cores.
 
-### tap.synonyms
+Software testing should help you build software.  It should be a security
+blanket and a quality ratchet, giving you the support to undertake massive
+refactoring and fix bugs without worrying.  It shouldn't be a purification
+rite or a hazing ritual.
 
-A list of all of the canonical assert methods and their synonyms.
-
-### tap.mochaGlobals()
-
-Method that injects `describe()` and `it()` into the global
-environment for mocha-like BDD style test definition.
-
-This feature is incomplete, experimental, and may change drastically
-in the future.  Feedback is welcome.
-
-### tap.Test
-
-The `Test` class is the main thing you'll be touching when you use
-this module.
-
-The most common way to instantiate a `Test` object by calling the
-`test` method on the root or any other `Test` object.  The callback
-passed to `test(name, fn)` will receive a child `Test` object as its
-argument.
-
-A `Test` object is a Readable Stream.  Child tests automatically send
-their data to their parent, and the root `require('tap')` object pipes
-to stdout by default.  However, you can instantiate a `Test` object
-and then pipe it wherever you like.  The only limit is your imagination.
-
-#### t.test(name, [options], [function])
-
-Create a subtest.
-
-If the function is omitted, then it will be marked as a "todo" or
-"pending" test.
-
-The options object is the same as would be passed to any assert, with
-two additional fields that are only relevant for child tests:
-
-* `timeout`: The number of ms to allow the test to run.
-* `bail`: Set to `true` to bail out on the first test failure.
-* `autoend`: Automatically `end()` the test on the next turn of the
-  event loop after its internal queue is drained.
-
-#### t.tearDown(function)
-
-Run the supplied function when `t.end()` is called, or when the `plan`
-is met.
-
-Note that when called on the root `tap` export, this also triggers
-`autoend` behavior.
-
-#### t.autoend()
-
-Automatically end the test as soon as there is nothing pending in its
-queue.
-
-The automatic end is deferred with a `setTimeout`, and any new action
-will cancel and re-schedule the timer.  Nonetheless, calling this
-method means that any slow asynchronous behavior may be lost, if it
-comes after the `end()` is auto-triggered.
-
-This behavior is triggered on the root `tap` object when
-`tap.tearDown()` is called.
-
-#### t.plan(number)
-
-Specify that a given number of tests are going to be run.
-
-This may only be called *before* running any asserts or child tests.
-
-#### t.end()
-
-Call when tests are done running.  This is not necessary if `t.plan()`
-was used.
-
-#### t.bailout([reason])
-
-Pull the proverbial ejector seat.
-
-Use this when things are severely broken, and cannot be reasonably
-handled.  Immediately terminates the entire test run.
-
-#### t.passing()
-
-Return true if everything so far is ok.
-
-Note that all assert methods also return `true` if they pass.
-
-#### t.comment(message)
-
-Print the supplied message as a TAP comment.
-
-Note that you can always use `console.error()` for debugging (or
-`console.log()` as long as the message doesn't look like TAP formatted
-data).
-
-#### t.fail(message, extra)
-
-Emit a failing test point.  This method, and `pass()`, are the basic
-building blocks of all fancier assertions.
-
-#### t.pass(message)
-
-Emit a passing test point.  This method, and `fail()`, are the basic
-building blocks of all fancier assertions.
-
-### Advanced Usage
-
-These methods are primarily for internal use, but can be handy in some
-unusual situations.  If you find yourself using them frequently, you
-*may* be Doing It Wrong.  However, if you find them useful, you should
-feel perfectly comfortable using them.
-
-#### t.stdin()
-
-Parse standard input as if it was a child test named `/dev/stdin`.
-
-This is primarily for use in the test runner, so that you can do
-`some-tap-emitting-program | tap other-file.js - -Rnyan`.
-
-#### t.spawn(command, arguments, [options], [name], [extra])
-
-Sometimes, instead of running a child test directly inline, you might
-want to run a TAP producting test as a child process, and treat its
-standard output as the TAP stream.
-
-That's what this method does.
-
-It is primarily used by the executable runner, to run all of the
-filename arguments provided on the command line.
-
-The `options` object is passed to `child_process.spawn`, and can
-contain stuff like stdio directives and environment vars.
-
-The `extra` arg is the same that would be passed to any assertion or
-child test, with the addition of the following fields:
-
-* `bail`: Set to `true` to bail out on the first failure.  This is
-  done by checking the output and then forcibly killing the process,
-  but also sets the `TAP_BAIL` environment variable, which node-tap
-  uses to set this field internally as well.
-* `timeout`: The number of ms to allow the child process to continue.
-  If it goes beyond this time, the child process will be forcibly
-  killed.
-
-#### t.addAssert(name, length, fn)
-
-This is used for creating assertion methods on the `Test` class.
-
-It's a little bit advanced, but it's also super handy sometimes.  All
-of the assert methods below are created using this function, and it
-can be used to create application-specific assertions in your tests.
-
-The name is the method name that will be created.  The length is the
-number of arguments the assertion operates on.  (The `message` and
-`extra` arguments will alwasy be appended to the end.)
-
-For example, you could have a file at `test/setup.js` that does the
-following:
-
-```javascript
-var tap = require('tap')
-
-// convenience
-if (module === require.main) {
-  tap.pass('ok')
-  return
-}
-
-// Add an assertion that a string is in Title Case
-// It takes one argument (the string to be tested)
-tap.Test.prototype.addAssert('titleCase', 1, function (str, message, extra) {
-  message = message || 'should be in Title Case'
-  // the string in Title Case
-  // A fancier implementation would avoid capitalizing little words
-  // to get `Silence of the Lambs` instead of `Silence Of The Lambs`
-  // But whatever, it's just an example.
-  var tc = str.toLowerCase().replace(/\b./, function (match) {
-    return match.toUpperCase()
-  })
-
-  // should always return another assert call, or
-  // this.pass(message) or this.fail(message, extra)
-  return this.equal(str, tc, message, extra)
-})
-```
-
-Then in your individual tests, you'd do this:
-
-```javascript
-require('./setup.js') // adds the assert
-var tap = require('tap')
-tap.titleCase('This Passes')
-tap.titleCase('however, tHis tOTaLLy faILS')
-```
-
-#### t.endAll()
-
-Call the `end()` method on all child tests, and then on this one.
-
-#### t.current()
-
-Return the currently active test.
-
-### Asserts
-
-The `Test` object has a collection of assertion methods, many of which
-are given several synonyms for compatibility with other test runners
-and the vagaries of human expectations and spelling.  When a synonym
-is multi-word in `camelCase` the corresponding lower case and
-`snake_case` versions are also created as synonyms.
-
-All assertion methods take optional `message` and `extra` arguments as
-the last two params.  The `message` is the name of the test.  The
-`extra` argument can contain any arbitrary data about the test, but
-the following fields are "special".
-
-* `todo` Set to boolean `true` or a String to mark this as pending
-* `skip` Set to boolean `true` or a String to mark this as skipped
-* `at` Generated by the framework.  The location where the assertion
-  was called.  Do not set.
-* `stack` Generated by the framework.  The stack trace to the point
-  where the assertion was called.
-
-#### ok(obj, message, extra)
-
-Verifies that the object is truthy.
-
-Synonyms: `t.true`, `t.assert`
-
-#### notOk(obj, message, extra)
-
-Verifies that the object is not truthy.
-
-Synonyms: `t.false`, `t.assertNot`
-
-#### error(obj, message, extra)
-
-If the object is an error, then the assertion fails.
-
-Note: if an error is encountered unexpectedly, it's often better to
-simply throw it.  The Test object will handle this as a failure.
-
-Synonyms: `t.ifErr`, `t.ifError`
-
-#### throws(fn, [expectedError], message, extra)
-
-Expect the function to throw an error.  If an expected error is
-provided, then also verify that the thrown error matches the expected
-error.
-
-Caveat: if you pass a `extra` object to t.throws, then you MUST also
-pass in an expected error, or else it will read the diag object as the
-expected error, and get upset when your thrown error doesn't match
-`{skip:true}` or whatever.
-
-For example, this will not work as expected:
-
-```javascript
-t.throws(function() {throw new Error('x')}, { skip: true })
-```
-
-But this is fine:
-
-```javascript
-// note the empty 'expected error' object.
-// since it has no fields, it'll only verify that the thrown thing is
-// an object, not the value of any properties
-t.throws(function() {throw new Error('x')}, {}, { skip: true })
-```
-
-
-Synonyms: `t.throw`
-
-#### doesNotThrow(fn, message, extra)
-
-Verify that the provided function does not throw.
-
-Note: if an error is encountered unexpectedly, it's often better to
-simply throw it.  The Test object will handle this as a failure.
-
-Synonyms: `t.notThrow`
-
-#### equal(found, wanted, message, extra)
-
-Verify that the object found is exactly the same (that is, `===`) to
-the object that is wanted.
-
-Synonyms: `t.equals`, `t.isEqual`, `t.is`, `t.strictEqual`,
-`t.strictEquals`, `t.strictIs`, `t.isStrict`, `t.isStrictly`
-
-#### notEqual(found, notWanted, message, extra)
-
-Inverse of `equal()`.
-
-Verify that the object found is not exactly the same (that is, `!==`) as
-the object that is wanted.
-
-Synonyms: `t.inequal`, `t.notEqual`, `t.notEquals`,
-`t.notStrictEqual`, `t.notStrictEquals`, `t.isNotEqual`, `t.isNot`,
-`t.doesNotEqual`, `t.isInequal`
-
-#### same(found, wanted, message, extra)
-
-Verify that the found object is deeply equivalent to the wanted
-object.  Use non-strict equality for scalars (ie, `==`).
-
-Synonyms: `t.equivalent`, `t.looseEqual`, `t.looseEquals`,
-`t.deepEqual`, `t.deepEquals`, `t.isLoose`, `t.looseIs`
-
-#### notSame(found, notWanted, message, extra)
-
-Inverse of `same()`.
-
-Verify that the found object is not deeply equivalent to the
-unwanted object.  Uses non-strict inequality (ie, `!=`) for scalars.
-
-Synonyms: `t.inequivalent`, `t.looseInequal`, `t.notDeep`,
-`t.deepInequal`, `t.notLoose`, `t.looseNot`
-
-#### strictSame(found, wanted, message, extra)
-
-Strict version of `same()`.
-
-Verify that the found object is deeply equivalent to the wanted
-object.  Use strict equality for scalars (ie, `===`).
-
-Synonyms: `t.strictEquivalent`, `t.strictDeepEqual`, `t.sameStrict`,
-`t.deepIs`, `t.isDeeply`, `t.isDeep`, `t.strictDeepEquals`
-
-#### strictNotSame(found, notWanted, message, extra)
-
-Inverse of `strictSame()`.
-
-Verify that the found object is not deeply equivalent to the unwanted
-object.  Use strict equality for scalars (ie, `===`).
-
-Synonyms: `t.strictInequivalent`, `t.strictDeepInequal`,
-`t.notSameStrict`, `t.deepNot`, `t.notDeeply`, `t.strictDeepInequals`,
-`t.notStrictSame`
-
-#### match(found, pattern, message, extra)
-
-Verify that the found object matches the pattern provided.
-
-If pattern is a regular expression, and found is a string, then verify
-that the string matches the pattern.
-
-If pattern is an object, the verify that the found object contains all
-the keys in the pattern, and that all of the found object's values
-match the corresponding fields in the pattern.
-
-This is useful when you want to verify that an object has a certain
-set of required fields, but additional fields are ok.
-
-
-Synonyms: `t.has`, `t.hasFields`, `t.matches`, `t.similar`, `t.like`,
-`t.isLike`, `t.includes`, `t.include`
-
-#### notMatch(found, pattern, message, extra)
-
-Interse of `match()`
-
-Verify that the found object does not match the pattern provided.
-
-Synonyms: `t.dissimilar`, `t.unsimilar`, `t.notSimilar`, `t.unlike`,
-`t.isUnlike`, `t.notLike`, `t.isNotLike`, `t.doesNotHave`,
-`t.isNotSimilar`, `t.isDissimilar`
-
-#### type(object, type, message, extra)
-
-Verify that the object is of the type provided.
-
-Type can be a string that matches the `typeof` value of the object, or
-the string name of any constructor in the object's prototype chain, or
-a constructor function in the object's prototype chain.
-
-For example, all the following will pass:
-
-```javascript
-t.type(new Date(), 'object')
-t.type(new Date(), 'Date')
-t.type(new Date(), Date)
-```
-
-Synonyms: `t.isa`, `t.isA`
+There are many opinions left off of this list!  Reasonable people can
+disagree.  But if you find yourself nodding along, [maybe tap is for
+you](https://www.node-tap.org/basics/).
