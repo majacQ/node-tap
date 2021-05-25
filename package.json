@@ -20,7 +20,7 @@
     "node": ">=10"
   },
   "dependencies": {
-    "@types/react": "^16.14.6",
+    "@types/react": "^16.14.7",
     "chokidar": "^3.3.0",
     "coveralls": "^3.0.11",
     "findit": "^2.0.0",
