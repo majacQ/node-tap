@@ -31,7 +31,7 @@
     "ink": "^2.7.1",
     "isexe": "^2.0.0",
     "istanbul-lib-processinfo": "^2.0.2",
-    "jackspeak": "^1.4.0",
+    "jackspeak": "^1.4.1",
     "libtap": "^1.1.1",
     "minipass": "^3.1.1",
     "mkdirp": "^1.0.4",
