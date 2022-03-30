@@ -28,10 +28,10 @@
     "fs-exists-cached": "^1.0.0",
     "glob": "^7.1.6",
     "import-jsx": "^4.0.0",
-    "ink": "^2.7.1",
+    "ink": "^3.2.0",
     "isexe": "^2.0.0",
     "istanbul-lib-processinfo": "^2.0.2",
-    "jackspeak": "^1.4.0",
+    "jackspeak": "^1.4.1",
     "libtap": "^1.1.1",
     "minipass": "^3.1.1",
     "mkdirp": "^1.0.4",
@@ -45,7 +45,7 @@
     "tap-parser": "^10.0.1",
     "tap-yaml": "^1.0.0",
     "tcompare": "^5.0.6",
-    "treport": "^2.0.2",
+    "treport": "^3.0.3",
     "which": "^2.0.2"
   },
   "devDependencies": {
